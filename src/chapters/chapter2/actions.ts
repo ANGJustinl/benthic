@@ -182,6 +182,11 @@ export function handleChapter2Action(state: GameState, action: GameAction): Game
     case 'EXPLORE_TARGET': {
       if (!target || !state.chapter2?.rov?.deployed || state.chapter2?.rov?.destroyed) return state;
       
+      // 检查冷却时间
+      const now = Date.now();
+      const lastExploreTime = state.chapter2?.rov?.lastExplorationTime || 0;
+      if (now - lastExploreTime < 10000) return state; // 10秒冷却
+      
       const explorationResult = EXPLORATION_RESULTS[target];
       if (!explorationResult) return state;
 
@@ -247,6 +252,16 @@ export function handleChapter2Action(state: GameState, action: GameAction): Game
           rov: {
             ...newState.chapter2?.rov,
             currentTarget: ROV_TARGETS.ICARUS_WRECK,
+            lastExplorationTime: now, // 更新探索时间
+          },
+        } as Chapter2State;
+      } else {
+        // 对于其他探索目标，也更新探索时间
+        newState.chapter2 = {
+          ...newState.chapter2,
+          rov: {
+            ...newState.chapter2?.rov,
+            lastExplorationTime: now,
           },
         } as Chapter2State;
       }

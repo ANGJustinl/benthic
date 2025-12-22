@@ -121,7 +121,39 @@ export function FeedFurnaceButton({ state, dispatch }: ComponentProps) {
   );
 }
 
-// 声呐按钮
+// 搜寻残骸按钮 - 主动获取废料/生物质/光照
+export function CollectResourcesButton({ state, dispatch }: ComponentProps) {
+  const now = Date.now();
+  const collectCooldown = Math.max(0, 3000 - (now - (state.lastCollectTime || 0)));
+  const isCollectCoolingDown = collectCooldown > 0;
+
+  // 有光后显示
+  if (!state.flags.hasLight) {
+    return null;
+  }
+
+  return (
+    <button
+      onClick={() => dispatch({ type: 'COLLECT_RESOURCES' })}
+      disabled={isCollectCoolingDown}
+      className={`
+        w-full py-2 text-sm font-mono border transition-all duration-200 relative overflow-hidden
+        ${isCollectCoolingDown
+          ? 'opacity-50 cursor-not-allowed border-gray-800 text-gray-600'
+          : 'border-amber-900 text-amber-600 hover:text-amber-400 hover:border-amber-500 hover:bg-amber-900/10'
+        }
+      `}
+    >
+      {isCollectCoolingDown && (
+        <div className="absolute inset-0 bg-gray-800/50 origin-left transition-transform duration-100 ease-linear" style={{ transform: `scaleX(${collectCooldown/8000})` }} />
+      )}
+      <span className="relative z-10">
+        [ 搜寻残骸 (Scavenge Debris) ]
+        {isCollectCoolingDown && ` - ${Math.ceil(collectCooldown/1000)}s`}
+      </span>
+    </button>
+  );
+}
 export function SonarPingButton({ state, dispatch }: ComponentProps) {
   const now = Date.now();
   const sonarCooldown = Math.max(0, 4000 - (now - state.lastSonarTime));

@@ -228,7 +228,8 @@ export class Chapter1Actions {
         coreTemperature: newTemp,
         flags: newFlags,
         chapter1Stage: newChapter1Stage,
-        logs: newLogs
+        logs: newLogs,
+        lastFurnaceTime: Date.now()
     };
   }
 

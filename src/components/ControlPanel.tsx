@@ -73,7 +73,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ state, dispatch }) =
               flags: { ...state.flags, commsRepaired: true, revealedTruth: true, hasLight: true, filtersUnlocked: true, furnaceUnlocked: true },
               resources: { 
                 [ResourceType.OXYGEN]: 80, 
-                [ResourceType.SCRAP]: 100, 
+                [ResourceType.SCRAP]: 200, // 增加废料
                 [ResourceType.BIOMASS]: 50, 
                 [ResourceType.LUMENS]: 20,
                 [ResourceType.EVOLUTION]: 0
@@ -82,8 +82,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ state, dispatch }) =
                 ...state.buildings, 
                 [BuildingType.PUMP]: 2  // 给2个氧气泵保证氧气供应
               },
-              power: 500, // 足够修复B区(300)和C区(500)
-              filterWaste: 10, // 给一些滤芯废料
+              power: 800, // 增加电力，足够修复B区(300)和C区(500)
+              filterWaste: 50, // 增加滤芯废料，确保燃烧室可用
               chapter2: {
                 zones: {
                   A_ZONE: { name: 'A区：中央控制室', status: 'online', repairProgress: 100, powerRequired: 0, scrapRequired: 0, unlocked: true },
@@ -92,7 +92,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({ state, dispatch }) =
                 },
                 rov: { assembled: false, deployed: false, currentTarget: null, explorationProgress: 0, destroyed: false, tetherCorrupted: false },
                 networkNodes: 0, computePower: 0, dataPackets: 0, ghostDataReceived: false,
-                circuits: 10, titanium: 30,
+                circuits: 15, // 增加电路板
+                titanium: 50, // 增加钛合金
                 signalAnalyzed: false, bZoneRepaired: false, cZoneRepaired: false,
                 rovFirstDeployment: false, tetherTruthRevealed: false, icarusLogRead: false,
                 icarusAssimilated: false, networkAwakened: false, chapter2Stage: 'handshake'

@@ -5,6 +5,7 @@ import {
   ManualCrankButton,
   ScrubFiltersButton,
   FeedFurnaceButton,
+  CollectResourcesButton,
   SonarPingButton,
   FullDiagnosticsButton,
   DamageControlPanel,
@@ -50,6 +51,9 @@ export function Chapter1UI({ state, dispatch }: Chapter1UIProps) {
       {state.flags.furnaceUnlocked && (
         <FeedFurnaceButton state={state} dispatch={dispatch} />
       )}
+
+      {/* 收集资源 - 有光后显示，主动获取废料/生物质/光照 */}
+      <CollectResourcesButton state={state} dispatch={dispatch} />
 
       {/* 建造面板 - 有光后显示，放置类游戏核心机制 */}
       <BuildingPanel state={state} dispatch={dispatch} />

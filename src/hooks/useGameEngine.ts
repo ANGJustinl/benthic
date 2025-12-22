@@ -1,6 +1,7 @@
 import { useReducer, useEffect } from 'react';
 import { GameState, GameAction, ResourceType, BuildingType, LogEntry } from '../types';
 import { COSTS, PRODUCTION, SCALING_FACTOR, STORY_EVENTS, OXYGEN_DECAY_BASE, INITIAL_MAX_OXYGEN, createStorySequence } from '../constants';
+import { CHAPTER1_STORY_EVENTS } from '../chapters/chapter1/constants';
 import { handleChapter2Action, initializeChapter2State } from '../chapters/chapter2/actions';
 import { handleChapter3Action, initializeChapter3State } from '../chapters/chapter3/actions';
 
@@ -55,6 +56,7 @@ const initialState: GameState = {
   lastCrankTime: Date.now() - 2000, // Set to 2 seconds ago so button is immediately available
   lastFilterTime: Date.now() - 3000, // 3 seconds ago
   lastFurnaceTime: Date.now() - 4000, // 4 seconds ago
+  lastCollectTime: Date.now() - 6000, // 6 seconds ago
   lastSonarTime: Date.now() - 8000, // 8 seconds ago
   lastDiagnosticsTime: Date.now() - 10000, // 10 seconds ago
   maxOxygen: INITIAL_MAX_OXYGEN,
@@ -400,7 +402,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         const now = Date.now();
         if (now - state.lastFurnaceTime < 3000) return state; // 3秒冷却时间
         
-        const powerGain = 15;
+        const powerGain = 50;
         const tempGain = 2;
         const wasteConsumed = 1;
         const newFurnaceUses = state.furnaceUses + 1;
@@ -475,6 +477,48 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             chapter1Stage: newChapter1Stage,
             lastFurnaceTime: now,
             logs: newLogs
+        };
+    }
+
+    case 'COLLECT_RESOURCES': {
+        const now = Date.now();
+        if (now - (state.lastCollectTime || 0) < 3000) return state; // 3s cooldown
+        
+        // 随机收集量 (类似其他按钮的机制)
+        const scrapGain = Math.floor(Math.random() * 4) + 2; // 2-5
+        const biomassGain = Math.floor(Math.random() * 3) + 1; // 1-3
+        const lumensGain = Math.floor(Math.random() * 2) + 1; // 1-2
+        
+        // 随机选择搜寻消息
+        const scavengeMessages = [
+          'SCAVENGE_1', 'SCAVENGE_2', 'SCAVENGE_3', 'SCAVENGE_4',
+          'SCAVENGE_5', 'SCAVENGE_6', 'SCAVENGE_7', 'SCAVENGE_8'
+        ];
+        const randomMessage = scavengeMessages[Math.floor(Math.random() * scavengeMessages.length)];
+        
+        // 从 Chapter 1 constants 获取消息
+        const messageText = CHAPTER1_STORY_EVENTS[randomMessage as keyof typeof CHAPTER1_STORY_EVENTS];
+        
+        const newLogs = [
+          {
+            id: generateLogId(),
+            text: messageText,
+            type: 'story' as const,
+            timestamp: now
+          },
+          ...state.logs
+        ];
+        
+        return {
+          ...state,
+          resources: {
+            ...state.resources,
+            [ResourceType.SCRAP]: state.resources[ResourceType.SCRAP] + scrapGain,
+            [ResourceType.BIOMASS]: state.resources[ResourceType.BIOMASS] + biomassGain,
+            [ResourceType.LUMENS]: state.resources[ResourceType.LUMENS] + lumensGain,
+          },
+          logs: newLogs,
+          lastCollectTime: now
         };
     }
 

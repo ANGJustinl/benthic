@@ -271,28 +271,72 @@ export function ROVExplorationPanel({ state, dispatch }: ComponentProps) {
     return null;
   }
 
+  const now = Date.now();
+  const lastExploreTime = chapter2.rov.lastExplorationTime || 0;
+  const exploreCooldown = Math.max(0, 10000 - (now - lastExploreTime)); // 10秒冷却
+  const isExploreCoolingDown = exploreCooldown > 0;
+
   return (
     <div className="space-y-1.5">
       <button
         onClick={() => dispatch({ type: 'CHAPTER2_ACTION', payload: { action: 'EXPLORE_TARGET', target: ROV_TARGETS.DEBRIS_FIELD } })}
-        className="w-full px-2 py-1.5 bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 rounded border border-gray-600 text-xs font-mono transition-colors"
+        disabled={isExploreCoolingDown}
+        className={`
+          w-full px-2 py-1.5 rounded border text-xs font-mono transition-colors relative overflow-hidden
+          ${isExploreCoolingDown
+            ? 'opacity-50 cursor-not-allowed bg-gray-800/30 text-gray-600 border-gray-700'
+            : 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 border-gray-600'
+          }
+        `}
       >
-        探索：残骸堆
+        {isExploreCoolingDown && (
+          <div className="absolute inset-0 bg-gray-800/50 origin-left transition-transform duration-100 ease-linear" style={{ transform: `scaleX(${exploreCooldown/10000})` }} />
+        )}
+        <span className="relative z-10">
+          探索：残骸堆
+          {isExploreCoolingDown && ` - ${Math.ceil(exploreCooldown/1000)}s`}
+        </span>
       </button>
       
       <button
         onClick={() => dispatch({ type: 'CHAPTER2_ACTION', payload: { action: 'EXPLORE_TARGET', target: ROV_TARGETS.THERMAL_VENTS } })}
-        className="w-full px-2 py-1.5 bg-orange-900/30 hover:bg-orange-800/40 text-orange-300 rounded border border-orange-800 text-xs font-mono transition-colors"
+        disabled={isExploreCoolingDown}
+        className={`
+          w-full px-2 py-1.5 rounded border text-xs font-mono transition-colors relative overflow-hidden
+          ${isExploreCoolingDown
+            ? 'opacity-50 cursor-not-allowed bg-gray-800/30 text-gray-600 border-gray-700'
+            : 'bg-orange-900/30 hover:bg-orange-800/40 text-orange-300 border-orange-800'
+          }
+        `}
       >
-        探索：地热喷口
+        {isExploreCoolingDown && (
+          <div className="absolute inset-0 bg-gray-800/50 origin-left transition-transform duration-100 ease-linear" style={{ transform: `scaleX(${exploreCooldown/10000})` }} />
+        )}
+        <span className="relative z-10">
+          探索：地热喷口
+          {isExploreCoolingDown && ` - ${Math.ceil(exploreCooldown/1000)}s`}
+        </span>
       </button>
       
       {chapter2.tetherTruthRevealed && !chapter2.icarusLogRead && (
         <button
           onClick={() => dispatch({ type: 'CHAPTER2_ACTION', payload: { action: 'EXPLORE_TARGET', target: ROV_TARGETS.ICARUS_WRECK } })}
-          className="w-full px-2 py-1.5 bg-red-900/30 hover:bg-red-800/40 text-red-300 rounded border border-red-800 text-xs font-mono transition-colors animate-pulse"
+          disabled={isExploreCoolingDown}
+          className={`
+            w-full px-2 py-1.5 rounded border text-xs font-mono transition-colors relative overflow-hidden
+            ${isExploreCoolingDown
+              ? 'opacity-50 cursor-not-allowed bg-gray-800/30 text-gray-600 border-gray-700'
+              : 'bg-red-900/30 hover:bg-red-800/40 text-red-300 border-red-800 animate-pulse'
+            }
+          `}
         >
-          探索：伊卡洛斯号 (1200m)
+          {isExploreCoolingDown && (
+            <div className="absolute inset-0 bg-gray-800/50 origin-left transition-transform duration-100 ease-linear" style={{ transform: `scaleX(${exploreCooldown/10000})` }} />
+          )}
+          <span className="relative z-10">
+            探索：伊卡洛斯号 (1200m)
+            {isExploreCoolingDown && ` - ${Math.ceil(exploreCooldown/1000)}s`}
+          </span>
         </button>
       )}
       

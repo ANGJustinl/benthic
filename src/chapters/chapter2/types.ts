@@ -21,6 +21,7 @@ export interface Chapter2State {
     explorationProgress: number; // 0-100
     destroyed: boolean;
     tetherCorrupted: boolean;
+    lastExplorationTime?: number; // ROV 探索冷却时间
   };
   
   // Network system

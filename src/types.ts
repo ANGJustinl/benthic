@@ -60,6 +60,7 @@ export interface GameState {
   lastFurnaceTime: number;
   lastSonarTime: number;
   lastDiagnosticsTime: number;
+  lastCollectTime: number; // 收集资源冷却时间
   maxOxygen: number;
   // Chapter 1 specific state
   coreTemperature: number;
@@ -97,6 +98,7 @@ export type GameAction =
   | { type: 'MANUAL_CRANK' }
   | { type: 'SCRUB_FILTERS' }
   | { type: 'FEED_FURNACE' }
+  | { type: 'COLLECT_RESOURCES' } // 新增：收集资源
   | { type: 'SONAR_PING' }
   | { type: 'FULL_DIAGNOSTICS' }
   | { type: 'DAMAGE_CONTROL'; payload: { action: string } }
