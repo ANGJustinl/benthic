@@ -13,7 +13,7 @@ Is that knocking sound coming from the ocean outside? Or is it coming from *with
 
 ## 🖥️ System Features
 
-- **Agentic Designed Story**: A narrative experience co-authored by Gemini 1.5 Pro and Claude 3.5 Sonnet.
+- **Agentic Designed Story**: A narrative experience co-authored by Gemini 3 Pro and Claude 4.5.
 - **Incremental Survival**: Manage Oxygen, Power, and Temperature. Every click matters when the air is running out.
 - **Manual Override**: Physical interactions matter. Crank the generator, scrub the CO2 filters, and keep the fluids moving.
 - **Chapter System**: Progress through distinct story phases:
@@ -44,7 +44,7 @@ The project utilizes a modular **Chapter System** to manage narrative progressio
 
 - `src/chapters/` - Contains logic for different story acts.
 - `src/components/` - React UI components.
-- `src/engine/` - Core game loop and resource management.
+- `src/hooks/` - Core game loop and resource management.
 
 ## ⚠️ System Warning
 
@@ -52,4 +52,4 @@ The project utilizes a modular **Chapter System** to manage narrative progressio
 
 ---
 
-*Created by ANGJustinl with the assistance of AI Agents.*
+*Created by AI Agents with the assistance of ANGJustinl.*
