@@ -1,3 +1,6 @@
+import { Chapter2State } from './chapters/chapter2/types';
+import { Chapter3State } from './chapters/chapter3/types';
+
 export enum ResourceType {
   OXYGEN = 'oxygen',
   LUMENS = 'lumens',
@@ -67,6 +70,16 @@ export interface GameState {
   sonarPings: number;
   hullIntegrity: number;
   damageControlTimer: number;
+  damageControlProgress?: {
+    seal_a: boolean;
+    seal_b: boolean;
+    pump: boolean;
+    hardener: boolean;
+  };
+  // Chapter 2 state
+  chapter2?: Chapter2State;
+  // Chapter 3 state
+  chapter3?: Chapter3State;
 }
 
 export type GameAction = 
@@ -86,4 +99,30 @@ export type GameAction =
   | { type: 'FEED_FURNACE' }
   | { type: 'SONAR_PING' }
   | { type: 'FULL_DIAGNOSTICS' }
-  | { type: 'DAMAGE_CONTROL'; payload: { action: string } };
+  | { type: 'DAMAGE_CONTROL'; payload: { action: string } }
+  // Chapter 2 actions
+  | { type: 'CHAPTER2_ACTION'; payload: { 
+      action: 'ANALYZE_SIGNAL' | 'REPAIR_ZONE' | 'ASSEMBLE_ROV' | 'DEPLOY_ROV' | 
+              'EXPLORE_TARGET' | 'READ_ICARUS_LOG' | 'DISCONNECT_ROV' | 'SELF_DESTRUCT_ROV' |
+              'PROCESS_GHOST_DATA' | 'COMPLETE_CHAPTER2';
+      target?: string;
+      progress?: number;
+    } }
+  // Chapter 3 actions
+  | { type: 'CHAPTER3_ACTION'; payload: { 
+      action: 'INJECT_COOLANT' | 'ACCELERATE_METABOLISM' | 'TRIGGER_MOLT_WARNING' | 
+              'EMERGENCY_REINFORCE' | 'TRIGGER_SHELL_SHED' | 
+              'CONTINUE_MOLT' | 'TRIGGER_INTERPRET' | 'TRIGGER_ENCOUNTER' |
+              'SING' | 'TRIGGER_POSEIDON_RESPONSE' | 'TRIGGER_ASCENSION_PROMPT' |
+              'CHOOSE_ENDING' | 'TRIGGER_EPILOGUE' | 'COMPLETE_CHAPTER3';
+      target?: string;
+      ending?: 'deep' | 'spore' | 'beacon';
+    } }
+  // Test helper actions
+  | { type: 'SET_PHASE'; payload: { phase: 1 | 2 | 3 } }
+  | { type: 'ADD_RESOURCE'; payload: { resourceType: ResourceType; amount: number } }
+  | { type: 'SET_POWER'; payload: { power: number } }
+  | { type: 'SET_CHAPTER2_RESOURCES'; payload: { circuits?: number; titanium?: number } }
+  | { type: 'RESET_CHAPTER2_ZONE'; payload: { zone: string } }
+  | { type: 'RESET_CHAPTER2_ROV' }
+  | { type: 'RESET_CHAPTER2_NETWORK' };

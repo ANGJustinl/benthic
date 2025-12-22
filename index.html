@@ -26,12 +26,28 @@
             animation: {
               'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
               'heartbeat': 'heartbeat 1.5s ease-in-out infinite',
+              'fade-in-slow': 'fadeInSlow 3s ease-out forwards',
+              'fade-in-delayed': 'fadeInDelayed 2s ease-out 1.5s forwards',
+              'fade-in-text-1': 'fadeInText 1.5s ease-out 3s forwards',
+              'fade-in-text-2': 'fadeInText 1.5s ease-out 4s forwards',
             },
             keyframes: {
               heartbeat: {
                 '0%, 100%': { transform: 'scale(1)' },
                 '50%': { transform: 'scale(1.02)' },
-              }
+              },
+              fadeInSlow: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              fadeInDelayed: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              fadeInText: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
             }
           },
         },

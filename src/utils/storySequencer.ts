@@ -45,7 +45,7 @@ export class StorySequencer {
       }
     }
 
-    console.log('Final processed logs:', processedLogs.map(p => ({ text: p.text, isVisible: p.isVisible })));
+    // console.log('Final processed logs:', processedLogs.map(p => ({ text: p.text, isVisible: p.isVisible })));
     return processedLogs;
   }
 
@@ -219,7 +219,7 @@ export function useStorySequencer(logs: LogEntry[]) {
     // 检查是否有需要延迟显示的消息
     const hasHiddenLogs = processed.some(log => !log.isVisible);
     
-    console.log('Has hidden logs:', hasHiddenLogs);
+    // console.log('Has hidden logs:', hasHiddenLogs);
     
     if (hasHiddenLogs) {
       intervalRef.current = setInterval(() => {
@@ -248,7 +248,7 @@ export function useStorySequencer(logs: LogEntry[]) {
 
   // 返回所有日志，但只有可见的会被渲染
   const visibleLogs = sequencedLogs.filter(log => log.isVisible);
-  console.log('Returning visible logs:', visibleLogs.map(l => ({ text: l.text, timestamp: l.timestamp })));
+  // console.log('Returning visible logs:', visibleLogs.map(l => ({ text: l.text, timestamp: l.timestamp })));
   
   return visibleLogs;
 }

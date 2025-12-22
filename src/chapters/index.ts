@@ -1,5 +1,9 @@
+import React from 'react';
+
 // Chapter system exports
 export * from './chapter1';
+export * from './chapter2';
+export * from './chapter3';
 export * from './types';
 
 // Chapter registry

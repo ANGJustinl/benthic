@@ -62,12 +62,13 @@ export const LogViewer: React.FC<LogViewerProps> = ({ logs, phase }) => {
           ${getMessageTypeStyle(log.type)}
         `}
       >
+        {/* 时间戳 - 根据阶段显示不同格式 */}
         <span className={LOG_STYLE_CONFIG.TIMESTAMP.BASE}>
           {phase === 3 
-            ? LOG_STYLE_CONFIG.TIMESTAMP.PHASE_3
+            ? '>> '
             : isImpact 
-              ? LOG_STYLE_CONFIG.TIMESTAMP.IMPACT
-              : `[T-${Math.floor(log.timestamp / 10000)}] `
+              ? '[EMERGENCY] '
+              : `[${new Date(log.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}] `
           }
         </span>
         

@@ -48,94 +48,145 @@ export const ResourcePanel: React.FC<ResourcePanelProps> = ({ state }) => {
           {/* Oxygen Status */}
           <div className="mb-4">
             <div className="flex justify-between text-xs mb-1 font-mono">
-              <span className="text-term-green">氧气浓度</span>
-              <span className={`${state.resources[ResourceType.OXYGEN] < 10 ? 'text-red-500 animate-pulse font-bold' : 'text-gray-400'}`}>
-                {state.resources[ResourceType.OXYGEN] < 10 ? 'CRITICAL' : `${Math.floor(state.resources[ResourceType.OXYGEN])}%`}
+              <span className="text-gray-400">氧气</span>
+              <span className={`${state.flags.oxygenCrisis ? 'text-red-400 animate-pulse' : 'text-cyan-400'}`}>
+                {Math.floor(state.resources[ResourceType.OXYGEN])} / {state.maxOxygen}
               </span>
             </div>
-            <div className="w-full h-2 bg-gray-900 rounded overflow-hidden border border-gray-800">
+            <div className="w-full bg-gray-900 rounded-full h-2">
               <div 
-                className={`h-full transition-all duration-500 ${state.resources[ResourceType.OXYGEN] < 10 ? 'bg-red-600 animate-pulse' : 'bg-cyan-600'}`} 
-                style={{ width: `${Math.min(100, (state.resources[ResourceType.OXYGEN] / state.maxOxygen) * 100)}%` }}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  state.flags.oxygenCrisis ? 'bg-red-600 animate-pulse' : 'bg-cyan-600'
+                }`}
+                style={{ width: `${Math.max(0, Math.min(100, (state.resources[ResourceType.OXYGEN] / state.maxOxygen) * 100))}%` }}
               />
             </div>
           </div>
 
-          {/* Core Temperature (shown after rust stage) */}
-          {state.chapter1Stage !== 'boot' && (
-            <div className="mb-4">
-              <div className="flex justify-between text-xs mb-1 font-mono">
-                <span className="text-term-green">核心温度</span>
-                <span className={`${state.coreTemperature < 5 ? 'text-blue-400' : (state.coreTemperature >= 20 ? 'text-green-400' : 'text-gray-400')}`}>
-                  {Math.floor(state.coreTemperature)}°C
-                </span>
+          {/* Chapter 1 Specific Resources */}
+          {state.flags.hasLight && (
+            <div className="text-xs space-y-2 font-mono">
+              <div className="flex justify-between">
+                <span className="text-gray-400">光照</span>
+                <span className="text-yellow-400">{Math.floor(state.resources[ResourceType.LUMENS])}</span>
               </div>
-              <div className="w-full h-2 bg-gray-900 rounded overflow-hidden border border-gray-800">
-                <div 
-                  className={`h-full transition-all duration-500 ${state.coreTemperature < 5 ? 'bg-blue-600' : (state.coreTemperature >= 20 ? 'bg-green-600' : 'bg-yellow-600')}`} 
-                  style={{ width: `${Math.min(100, (state.coreTemperature / 30) * 100)}%` }}
-                />
+              <div className="flex justify-between">
+                <span className="text-gray-400">生物质</span>
+                <span className="text-green-400">{Math.floor(state.resources[ResourceType.BIOMASS])}</span>
               </div>
             </div>
           )}
 
-          {/* Power (shown after rust stage) */}
-          {state.chapter1Stage !== 'boot' && (
-            <div className="flex justify-between items-center text-sm font-mono border-b border-gray-900 pb-1">
+          {/* Chapter 1 Status Indicators */}
+          <div className="text-xs space-y-1 mt-4 font-mono">
+            <div className="flex justify-between">
+              <span className="text-gray-400">核心温度</span>
+              <span className={`${state.coreTemperature < 10 ? 'text-blue-400' : state.coreTemperature > 25 ? 'text-red-400' : 'text-green-400'}`}>
+                {state.coreTemperature}°C
+              </span>
+            </div>
+            <div className="flex justify-between">
               <span className="text-gray-400">电力</span>
-              <span className="text-term-green">{Math.floor(state.power)}</span>
+              <span className="text-yellow-400">{state.power}</span>
             </div>
-          )}
-
-          {/* Filter Waste (shown during rust stage) */}
-          {state.chapter1Stage === 'rust' && state.filterWaste > 0 && (
-            <div className="flex justify-between items-center text-sm font-mono border-b border-gray-900 pb-1">
-              <span className="text-gray-400">过滤网残渣</span>
-              <span className="text-term-green">{Math.floor(state.filterWaste)} kg</span>
-            </div>
-          )}
-
-          {/* Hull Integrity (shown during impact) */}
-          {state.chapter1Stage === 'impact' && (
-            <div className="mb-4">
-              <div className="flex justify-between text-xs mb-1 font-mono">
-                <span className="text-term-green">外壳完整性</span>
-                <span className={`${state.hullIntegrity < 60 ? 'text-red-500 animate-pulse' : 'text-gray-400'}`}>
-                  {Math.floor(state.hullIntegrity)}%
+            {state.flags.filtersUnlocked && (
+              <div className="flex justify-between">
+                <span className="text-gray-400">滤芯废料</span>
+                <span className="text-orange-400">{state.filterWaste.toFixed(1)} kg</span>
+              </div>
+            )}
+            {state.flags.impactOccurred && (
+              <div className="flex justify-between">
+                <span className="text-gray-400">船体完整性</span>
+                <span className={`${state.hullIntegrity < 50 ? 'text-red-400' : state.hullIntegrity < 80 ? 'text-yellow-400' : 'text-green-400'}`}>
+                  {state.hullIntegrity}%
                 </span>
               </div>
-              <div className="w-full h-2 bg-gray-900 rounded overflow-hidden border border-gray-800">
-                <div 
-                  className={`h-full transition-all duration-500 ${state.hullIntegrity < 60 ? 'bg-red-600' : 'bg-green-600'}`} 
-                  style={{ width: `${state.hullIntegrity}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Sonar Pings (shown during ghost stage) */}
-          {state.chapter1Stage === 'ghost' && (
-            <div className="flex justify-between items-center text-sm font-mono border-b border-gray-900 pb-1">
-              <span className="text-gray-400">声呐脉冲</span>
-              <span className="text-term-green">{state.sonarPings}/3</span>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
 
+      {/* Chapter 2 Specific Status Display */}
+      {state.phase === 2 && state.chapter2 && (
+        <div className="space-y-3 mb-6">
+          {/* Standard Resources */}
+          <div className="text-xs space-y-2 font-mono">
+            <div className="flex justify-between">
+              <span className="text-gray-400">氧气</span>
+              <span className="text-cyan-400">{Math.floor(state.resources[ResourceType.OXYGEN])} / {state.maxOxygen}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">废料</span>
+              <span className="text-gray-400">{Math.floor(state.resources[ResourceType.SCRAP])}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">生物质</span>
+              <span className="text-green-400">{Math.floor(state.resources[ResourceType.BIOMASS])}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">光照</span>
+              <span className="text-yellow-400">{Math.floor(state.resources[ResourceType.LUMENS])}</span>
+            </div>
+          </div>
+
+          {/* Chapter 2 Specific Resources */}
+          <div className="text-xs space-y-2 font-mono border-t border-gray-700 pt-2">
+            <div className="flex justify-between">
+              <span className="text-blue-400">精密电路板</span>
+              <span className="text-blue-400">{state.chapter2.circuits}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-300">钛合金</span>
+              <span className="text-gray-300">{state.chapter2.titanium}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-purple-400">算力</span>
+              <span className="text-purple-400">{state.chapter2.computePower}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-cyan-400">网络节点</span>
+              <span className="text-cyan-400">{state.chapter2.networkNodes}</span>
+            </div>
+          </div>
+
+          {/* Chapter 2 Status */}
+          <div className="text-xs space-y-1 mt-4 font-mono border-t border-gray-700 pt-2">
+            <div className="flex justify-between">
+              <span className="text-gray-400">电力</span>
+              <span className="text-yellow-400">{state.power}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">阶段</span>
+              <span className="text-cyan-400">{state.chapter2.chapter2Stage}</span>
+            </div>
+            {state.chapter2.rov.assembled && (
+              <div className="flex justify-between">
+                <span className="text-gray-400">ROV 状态</span>
+                <span className={`${
+                  state.chapter2.rov.destroyed ? 'text-red-400' :
+                  state.chapter2.rov.deployed ? 'text-green-400' :
+                  'text-yellow-400'
+                }`}>
+                  {state.chapter2.rov.destroyed ? '已销毁' : 
+                   state.chapter2.rov.deployed ? '已部署' : '待命'}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {/* Resources */}
       <div className="space-y-2 mb-8">
-        {(Object.entries(state.resources) as [string, number][]).map(([key, value]) => {
-           // Hide other resources initially in Chapter 1
-           if (isChapter1 && key !== ResourceType.OXYGEN && !showResources) return null;
+        {/* Only show resources for Phase 2+ or when light is available in Phase 1 */}
+        {(state.phase > 1 || showResources) && (Object.entries(state.resources) as [string, number][]).map(([key, value]) => {
+           // Skip oxygen display for Chapter 1 and 2 (already shown above)
+           if (key === ResourceType.OXYGEN && (isChapter1 || state.phase === 2)) return null;
            // If we have light, show non-zero resources or key resources
            if (value === 0 && key !== ResourceType.OXYGEN && key !== ResourceType.LUMENS) return null;
-           
-           // Skip oxygen display for Chapter 1 (already shown above)
-           if (key === ResourceType.OXYGEN && isChapter1) return null;
 
-           // Oxygen Bar Special Display (non-Chapter 1)
-           if (key === ResourceType.OXYGEN && !isChapter1) {
+           // Oxygen Bar Special Display (Phase 3+)
+           if (key === ResourceType.OXYGEN && state.phase >= 3) {
                const pct = (value / state.maxOxygen) * 100;
                return (
                    <div key={key} className="mb-4">

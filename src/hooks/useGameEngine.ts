@@ -1,6 +1,8 @@
 import { useReducer, useEffect } from 'react';
 import { GameState, GameAction, ResourceType, BuildingType, LogEntry } from '../types';
 import { COSTS, PRODUCTION, SCALING_FACTOR, STORY_EVENTS, OXYGEN_DECAY_BASE, INITIAL_MAX_OXYGEN, createStorySequence } from '../constants';
+import { handleChapter2Action, initializeChapter2State } from '../chapters/chapter2/actions';
+import { handleChapter3Action, initializeChapter3State } from '../chapters/chapter3/actions';
 
 // Helper function to generate unique log IDs
 let logIdCounter = 0;
@@ -68,6 +70,16 @@ const initialState: GameState = {
 };
 
 function gameReducer(state: GameState, action: GameAction): GameState {
+  // Handle Chapter 2 actions first
+  if (action.type === 'CHAPTER2_ACTION') {
+    return handleChapter2Action(state, action);
+  }
+
+  // Handle Chapter 3 actions
+  if (action.type === 'CHAPTER3_ACTION') {
+    return handleChapter3Action(state, action);
+  }
+
   switch (action.type) {
     case 'TICK': {
       const newState = { ...state, lastTick: action.payload.now };
@@ -82,7 +94,34 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       
       // Calculate production
       let oxygenGen = state.buildings[BuildingType.PUMP] * PRODUCTION[BuildingType.PUMP][ResourceType.OXYGEN] || 0;
-      let biomassGen = state.buildings[BuildingType.BIO_FILTER] * (PRODUCTION[BuildingType.BIO_FILTER][ResourceType.BIOMASS] || 0);
+      
+      // Bio Filter now works like scavenger - generates random resources
+      const bioFilterCount = state.buildings[BuildingType.BIO_FILTER];
+      let biomassGen = 0;
+      let scrapGen = 0;
+      let lumensGen = 0;
+      
+      // Each bio filter has a chance to generate resources each tick (like manual scavenger)
+      for (let i = 0; i < bioFilterCount; i++) {
+        // Each filter has a 10% chance per tick to generate resources (6 seconds average)
+        if (Math.random() < 0.1) {
+          // Generate random resource like manual scavenger
+          const resourceTypes = [ResourceType.BIOMASS, ResourceType.SCRAP, ResourceType.LUMENS];
+          const randomResource = resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
+          
+          switch (randomResource) {
+            case ResourceType.BIOMASS:
+              biomassGen += Math.random() * 2 + 1; // 1-3 biomass
+              break;
+            case ResourceType.SCRAP:
+              scrapGen += Math.random() * 3 + 5; // 5-8 scrap
+              break;
+            case ResourceType.LUMENS:
+              lumensGen += Math.random() * 1 + 0.5; // 0.5-1.5 lumens
+              break;
+          }
+        }
+      }
       
       // Phase 3 Evolution gen
       if (state.phase === 3) {
@@ -118,6 +157,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state.resources,
         [ResourceType.OXYGEN]: newOxygen,
         [ResourceType.BIOMASS]: state.resources[ResourceType.BIOMASS] + biomassGen,
+        [ResourceType.SCRAP]: state.resources[ResourceType.SCRAP] + scrapGen,
+        [ResourceType.LUMENS]: state.resources[ResourceType.LUMENS] + lumensGen,
       };
 
       // Temperature effects
@@ -140,6 +181,42 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       // Overheat cooldown - reset after 5 seconds
       if (state.flags.overheated && action.payload.now - state.lastCrankTime > 5000) {
         newState.flags.overheated = false;
+      }
+      
+      // Chapter 2 passive resource generation
+      if (state.phase >= 2 && state.chapter2) {
+        // B区修复后：被动生成电路板和钛合金
+        if (state.chapter2.bZoneRepaired) {
+          // 每tick有10%几率生成资源（平均10秒一次）
+          if (Math.random() < 0.1) {
+            newState.chapter2 = {
+              ...newState.chapter2,
+              circuits: (newState.chapter2?.circuits || 0) + 1,
+            };
+          }
+          if (Math.random() < 0.15) {
+            newState.chapter2 = {
+              ...newState.chapter2,
+              titanium: (newState.chapter2?.titanium || 0) + 2,
+            };
+          }
+        }
+        
+        // 网络觉醒后：被动生成算力和生物质
+        if (state.chapter2.networkAwakened) {
+          // 每tick生成少量算力
+          newState.chapter2 = {
+            ...newState.chapter2,
+            computePower: (newState.chapter2?.computePower || 0) + 0.5,
+          };
+          // 伊卡洛斯号"消化"产生生物质
+          if (Math.random() < 0.2) {
+            newState.resources = {
+              ...newState.resources,
+              [ResourceType.BIOMASS]: newState.resources[ResourceType.BIOMASS] + 5,
+            };
+          }
+        }
       }
       
       return newState;
@@ -465,36 +542,28 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
         newFlags.coldWeldingDiscovered = true;
 
-        // Random chance to trigger impact after diagnostics
-        if (Math.random() < 0.3) {
-            newChapter1Stage = 'impact';
-            newFlags.impactOccurred = true;
-            newFlags.damageControlActive = true;
-            
-            const impactLogs = createStorySequence('IMPACT_SEQUENCE', generateLogId);
-            
-            // 确保撞击序列的时间戳在诊断序列之后
-            const adjustedImpactLogs = impactLogs.map((log, index) => ({
-                ...log,
-                timestamp: now + (index * 100) // 撞击序列在诊断序列之后显示
-            }));
-            
-            return {
-                ...state,
-                hullIntegrity: 62,
-                damageControlTimer: 60, // 60 seconds
-                flags: newFlags,
-                chapter1Stage: newChapter1Stage,
-                lastDiagnosticsTime: now,
-                logs: [...adjustedImpactLogs, ...diagnosticLogs, ...state.logs]
-            };
-        }
-
+        // Always trigger impact after diagnostics (was random before)
+        // This ensures players always have progression after diagnostics
+        newChapter1Stage = 'impact';
+        newFlags.impactOccurred = true;
+        newFlags.damageControlActive = true;
+        
+        const impactLogs = createStorySequence('IMPACT_SEQUENCE', generateLogId);
+        
+        // 确保撞击序列的时间戳在诊断序列之后
+        const adjustedImpactLogs = impactLogs.map((log, index) => ({
+            ...log,
+            timestamp: now + (index * 100) // 撞击序列在诊断序列之后显示
+        }));
+        
         return {
             ...state,
+            hullIntegrity: 62,
+            damageControlTimer: 60, // 60 seconds
             flags: newFlags,
+            chapter1Stage: newChapter1Stage,
             lastDiagnosticsTime: now,
-            logs: [...diagnosticLogs, ...state.logs]
+            logs: [...adjustedImpactLogs, ...diagnosticLogs, ...state.logs]
         };
     }
 
@@ -551,6 +620,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                     revealedTruth: true,
                     hasLight: true, // Ensure light is available for Phase 2
                 },
+                // Initialize Chapter 2 state
+                chapter2: initializeChapter2State(),
                 damageControlTimer: 0,
                 logs: [
                     {
@@ -720,6 +791,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 revealedTruth: true,
                 hasLight: true, // Ensure light is available for Phase 2
             },
+            // Initialize Chapter 2 state
+            chapter2: initializeChapter2State(),
             logs: [
                 ...createStorySequence('COMMS_REPAIR_SEQUENCE', generateLogId),
                 {
@@ -784,6 +857,87 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     
     case 'RESET_GAME':
         return initialState;
+
+    // Test helper actions
+    case 'SET_PHASE': {
+        const newState = { ...state, phase: action.payload.phase };
+        if (action.payload.phase === 2 && !state.chapter2) {
+            newState.chapter2 = initializeChapter2State();
+        }
+        return newState;
+    }
+
+    case 'ADD_RESOURCE':
+        return {
+            ...state,
+            resources: {
+                ...state.resources,
+                [action.payload.resourceType]: state.resources[action.payload.resourceType] + action.payload.amount
+            }
+        };
+
+    case 'SET_POWER':
+        return {
+            ...state,
+            power: action.payload.power
+        };
+
+    case 'SET_CHAPTER2_RESOURCES':
+        if (!state.chapter2) return state;
+        return {
+            ...state,
+            chapter2: {
+                ...state.chapter2,
+                circuits: action.payload.circuits !== undefined ? action.payload.circuits : state.chapter2.circuits,
+                titanium: action.payload.titanium !== undefined ? action.payload.titanium : state.chapter2.titanium,
+            }
+        };
+
+    case 'RESET_CHAPTER2_ZONE':
+        if (!state.chapter2) return state;
+        return {
+            ...state,
+            chapter2: {
+                ...state.chapter2,
+                bZoneRepaired: action.payload.zone === 'B_ZONE' ? false : state.chapter2.bZoneRepaired,
+                zones: {
+                    ...state.chapter2.zones,
+                    [action.payload.zone]: {
+                        ...state.chapter2.zones[action.payload.zone],
+                        status: 'offline',
+                        repairProgress: 0,
+                    }
+                }
+            }
+        };
+
+    case 'RESET_CHAPTER2_ROV':
+        if (!state.chapter2) return state;
+        return {
+            ...state,
+            chapter2: {
+                ...state.chapter2,
+                rov: {
+                    assembled: false,
+                    deployed: false,
+                    currentTarget: null,
+                    explorationProgress: 0,
+                    destroyed: false,
+                    tetherCorrupted: false,
+                }
+            }
+        };
+
+    case 'RESET_CHAPTER2_NETWORK':
+        if (!state.chapter2) return state;
+        return {
+            ...state,
+            chapter2: {
+                ...state.chapter2,
+                networkAwakened: false,
+                icarusAssimilated: false,
+            }
+        };
 
     default:
         return state;

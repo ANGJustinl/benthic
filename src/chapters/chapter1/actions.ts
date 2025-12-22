@@ -453,8 +453,14 @@ export class Chapter1Actions {
         
         return {
             ...state,
-            hullIntegrity: 62,
+            hullIntegrity: 30, // Start at critical 30%
             damageControlTimer: 60, // 60 seconds
+            damageControlProgress: {
+                seal_a: false,
+                seal_b: false,
+                pump: false,
+                hardener: false
+            },
             flags: newFlags,
             chapter1Stage: newChapter1Stage,
             logs: impactLogs
@@ -471,35 +477,66 @@ export class Chapter1Actions {
   static handleDamageControl(state: GameState, action: string): GameState {
     if (!state.flags.damageControlActive) return state;
     
+    // Track which actions have been successfully completed
+    const damageControlProgress = state.damageControlProgress || {
+      seal_a: false,
+      seal_b: false,
+      pump: false,
+      hardener: false
+    };
+    
+    // If this action was already completed, ignore
+    if (damageControlProgress[action as keyof typeof damageControlProgress]) {
+      return {
+        ...state,
+        logs: [{
+          id: generateLogId(),
+          text: "该系统已经完成操作。",
+          type: 'info' as const,
+          timestamp: Date.now()
+        }, ...state.logs]
+      };
+    }
+    
     let success = false;
     let message = '';
+    let integrityGain = 0;
     
     switch (action) {
         case 'seal_a':
-            success = Math.random() < 0.3; // 30% success rate
+            success = Math.random() < 0.4; // 40% success rate
             message = success ? CHAPTER1_STORY_EVENTS.SEAL_B_SUCCESS : CHAPTER1_STORY_EVENTS.SEAL_A_FAIL;
+            integrityGain = success ? 5 : 0; // Reduced from 8
             break;
         case 'seal_b':
-            success = true;
-            message = CHAPTER1_STORY_EVENTS.SEAL_B_SUCCESS;
+            success = Math.random() < 0.6; // 60% success rate
+            message = success ? CHAPTER1_STORY_EVENTS.SEAL_B_SUCCESS : CHAPTER1_STORY_EVENTS.SEAL_A_FAIL;
+            integrityGain = success ? 5 : 0; // Reduced from 8
             break;
         case 'pump':
-            success = true;
-            message = CHAPTER1_STORY_EVENTS.PUMP_OVERCLOCK;
+            success = Math.random() < 0.7; // 70% success rate
+            message = success ? CHAPTER1_STORY_EVENTS.PUMP_OVERCLOCK : "排水泵启动失败！电机过载！";
+            integrityGain = success ? 5 : 0; // Reduced from 7
             break;
         case 'hardener':
-            success = true;
-            message = CHAPTER1_STORY_EVENTS.HARDENER_RELEASE;
+            success = Math.random() < 0.8; // 80% success rate
+            message = success ? CHAPTER1_STORY_EVENTS.HARDENER_RELEASE : "凝胶喷射系统堵塞！";
+            integrityGain = success ? 5 : 0; // Reduced from 7
             break;
     }
 
     let newHullIntegrity = state.hullIntegrity;
+    let newDamageControlProgress = { ...damageControlProgress };
+    
     if (success) {
-        newHullIntegrity = Math.min(100, state.hullIntegrity + 10);
+        newHullIntegrity = Math.min(100, state.hullIntegrity + integrityGain);
+        newDamageControlProgress[action as keyof typeof damageControlProgress] = true;
     }
 
-    // Check if damage control is complete
-    if (newHullIntegrity >= 80 || state.damageControlTimer <= 10) {
+    // Check if ALL damage control actions are complete
+    const allActionsComplete = Object.values(newDamageControlProgress).every(v => v === true);
+    
+    if (allActionsComplete) {
         // Damage control successful, trigger SOS sequence
         const sosLogs = [
             {
@@ -607,6 +644,7 @@ export class Chapter1Actions {
                 hasLight: true, // Ensure light is available for Phase 2
             },
             damageControlTimer: 0,
+            damageControlProgress: undefined, // Reset for future use
             logs: sosLogs
         };
     }
@@ -614,6 +652,7 @@ export class Chapter1Actions {
     return {
         ...state,
         hullIntegrity: newHullIntegrity,
+        damageControlProgress: newDamageControlProgress,
         logs: [{
             id: generateLogId(),
             text: message,
