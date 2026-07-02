@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./dist"
+  },
+  "include": [
+    "./index.ts",
+    "./contracts.ts",
+    "./economy.ts",
+    "./runtime.ts",
+    "./save.ts",
+    "./scheduler.ts",
+    "./state.ts",
+    "./src/core/**/*.ts"
+  ]
+}

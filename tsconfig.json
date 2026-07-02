@@ -1,29 +1,20 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "experimentalDecorators": true,
-    "useDefineForClassFields": false,
-    "module": "ESNext",
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "skipLibCheck": true,
-    "types": [
-      "node"
-    ],
-    "moduleResolution": "bundler",
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "allowJs": true,
-    "jsx": "react-jsx",
-    "paths": {
-      "@/*": [
-        "./*"
-      ]
-    },
-    "allowImportingTsExtensions": true,
-    "noEmit": true
-  }
+  "extends": "./tsconfig.base.json",
+  "include": [
+    "./index.ts",
+    "./contracts.ts",
+    "./economy.ts",
+    "./runtime.ts",
+    "./save.ts",
+    "./scheduler.ts",
+    "./state.ts",
+    "./src/core/**/*.ts",
+    "./vitest.core.config.ts",
+    "./vite.config.ts"
+  ],
+  "exclude": [
+    "./dist",
+    "./example",
+    "./src/**/*.test.ts"
+  ]
 }

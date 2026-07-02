@@ -1,28 +1,83 @@
 {
-  "name": "benthic:-深渊",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@benthic/idle-core",
+  "version": "0.2.0",
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "test": "vitest --run",
-    "test:watch": "vitest"
+  "description": "Headless runtime toolkit for building web text idle game packs and renderers.",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./contracts": {
+      "types": "./dist/contracts.d.ts",
+      "import": "./dist/contracts.js",
+      "require": "./dist/contracts.cjs"
+    },
+    "./economy": {
+      "types": "./dist/economy.d.ts",
+      "import": "./dist/economy.js",
+      "require": "./dist/economy.cjs"
+    },
+    "./runtime": {
+      "types": "./dist/runtime.d.ts",
+      "import": "./dist/runtime.js",
+      "require": "./dist/runtime.cjs"
+    },
+    "./save": {
+      "types": "./dist/save.d.ts",
+      "import": "./dist/save.js",
+      "require": "./dist/save.cjs"
+    },
+    "./scheduler": {
+      "types": "./dist/scheduler.d.ts",
+      "import": "./dist/scheduler.js",
+      "require": "./dist/scheduler.cjs"
+    },
+    "./state": {
+      "types": "./dist/state.d.ts",
+      "import": "./dist/state.js",
+      "require": "./dist/state.cjs"
+    },
+    "./package.json": "./package.json"
   },
-  "dependencies": {
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+  "workspaces": [
+    "example"
+  ],
+  "scripts": {
+    "dev": "npm run dev:example",
+    "dev:example": "npm --workspace example run dev",
+    "build": "npm run build:core",
+    "build:core": "vite build --config vite.config.ts && tsc -p tsconfig.build.json && node ./scripts/verify-dist.mjs",
+    "build:example": "npm --workspace example run build",
+    "build:all": "npm run build:core && npm run build:example",
+    "preview": "npm run preview:example",
+    "preview:example": "npm --workspace example run preview",
+    "test": "vitest run --config vitest.config.ts",
+    "test:example": "vitest run --config example/vitest.config.ts",
+    "test:watch": "vitest --config vitest.config.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck:example": "tsc -p example/tsconfig.json --noEmit"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.1",
-    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "jsdom": "^27.3.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
     "vitest": "^4.0.16"
-  }
+  },
+  "keywords": [
+    "idle-game",
+    "runtime",
+    "typescript",
+    "headless",
+    "text-game"
+  ]
 }

@@ -1,0 +1,25 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "paths": {
+      "@benthic/idle-core": ["../index.ts"],
+      "@benthic/idle-core/contracts": ["../contracts.ts"],
+      "@benthic/idle-core/economy": ["../economy.ts"],
+      "@benthic/idle-core/runtime": ["../runtime.ts"],
+      "@benthic/idle-core/save": ["../save.ts"],
+      "@benthic/idle-core/scheduler": ["../scheduler.ts"],
+      "@benthic/idle-core/state": ["../state.ts"]
+    }
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.tsx",
+    "./vite.config.ts"
+  ],
+  "exclude": [
+    "./dist"
+  ]
+}

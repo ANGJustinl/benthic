@@ -4,12 +4,9 @@ import { Chapter2State, ExplorationResult, ZoneRepairCost } from './types';
 import { createChapter2StorySequence, CHAPTER2_ZONES, ZONE_STATES, ROV_TARGETS, CHAPTER2_STORY_EVENTS } from './constants';
 import { initializeChapter3State } from '../chapter3/actions';
 import { createChapter3StorySequence } from '../chapter3/constants';
+import { createScopedLogIdGenerator } from '../../engine/logs';
 
-// Helper function to generate unique log IDs
-let chapter2LogIdCounter = 0;
-function generateChapter2LogId(): string {
-  return `ch2-${Date.now()}-${++chapter2LogIdCounter}`;
-}
+const generateChapter2LogId = createScopedLogIdGenerator('ch2');
 
 // Zone repair costs
 const ZONE_REPAIR_COSTS: { [key: string]: ZoneRepairCost } = {

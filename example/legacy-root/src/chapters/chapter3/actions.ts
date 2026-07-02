@@ -2,12 +2,9 @@
 import { GameState, GameAction, ResourceType } from '../../types';
 import { Chapter3State } from './types';
 import { createChapter3StorySequence, ZONE_TRANSFORMATIONS } from './constants';
+import { createScopedLogIdGenerator } from '../../engine/logs';
 
-// Helper function to generate unique log IDs
-let chapter3LogIdCounter = 0;
-function generateChapter3LogId(): string {
-  return `ch3-${Date.now()}-${++chapter3LogIdCounter}`;
-}
+const generateChapter3LogId = createScopedLogIdGenerator('ch3');
 
 // Helper to check if epilogue was already triggered
 function triggeredEpilogue(state: GameState): boolean {
